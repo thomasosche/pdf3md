@@ -1,12 +1,12 @@
 # PDF to Markdown and Word Converter
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Docker Build Backend](https://github.com/murtaza-nasir/pdf3md/actions/workflows/build-backend-image.yml/badge.svg)](https://github.com/murtaza-nasir/pdf3md/actions/workflows/build-backend-image.yml)
-[![Docker Build Frontend](https://github.com/murtaza-nasir/pdf3md/actions/workflows/build-frontend-image.yml/badge.svg)](https://github.com/murtaza-nasir/pdf3md/actions/workflows/build-frontend-image.yml)
 
 This project is dual-licensed. Please see the [License](#license) section for comprehensive details.
 
 PDF3MD is a web application designed for efficient conversion of PDF documents into well-structured Markdown and Microsoft Word (DOCX) formats. It features a React-based frontend and a Python Flask backend, providing a seamless user experience with real-time progress updates.
+
+> **Note:** This is a fork of [murtaza-nasir/pdf3md](https://github.com/murtaza-nasir/pdf3md) with added features (Markdown download, live rendered preview with zoom, and a header/footer filter). The Docker images are built **from source** in this fork, so the upstream pre-built Docker Hub images are not used.
 
 ## Screenshots
 ![image](imgs/img1.png)
@@ -34,137 +34,56 @@ PDF3MD is a web application designed for efficient conversion of PDF documents i
 
 ## Getting Started
 
-The easiest and recommended way to run PDF3MD is using the provided Docker quick start script.
+This fork builds the Docker images **from source**, so all of the features added here are included. No Docker Hub account or pre-built images are required - the upstream `learnedmachine/pdf3md-*` images are **not** used.
 
 ### Prerequisites
 
 -   Docker Engine
 -   Docker Compose (typically included with Docker Desktop)
 
-### Using Pre-built Docker Images (Recommended)
+### Quick Start (Docker, build from source)
 
-This method uses pre-built Docker images from Docker Hub for quick setup. You'll need the `docker-compose.yml` and `docker-start.sh` script from the repository.
-
-1.  **Prepare Required Files**:
-    *   Create a directory for your application (e.g., `mkdir pdf3md-app && cd pdf3md-app`).
-    *   **`docker-compose.yml`**: Create a file named `docker-compose.yml` in this directory and paste the following content into it:
-        ```yaml
-        services:
-          backend:
-            image: docker.io/learnedmachine/pdf3md-backend:latest 
-            container_name: pdf3md-backend
-            ports:
-              - "6201:6201"
-            environment:
-              - PYTHONUNBUFFERED=1
-              - FLASK_ENV=production
-              - TZ=America/Chicago
-            volumes:
-              - ./pdf3md/temp:/app/temp # Creates a local temp folder for backend processing if needed
-            restart: unless-stopped
-            healthcheck:
-              test: ["CMD", "curl", "-f", "http://localhost:6201/"]
-              interval: 30s
-              timeout: 10s
-              retries: 3
-              start_period: 40s
-
-          frontend:
-            image: docker.io/learnedmachine/pdf3md-frontend:latest 
-            container_name: pdf3md-frontend
-            ports:
-              - "3000:3000"
-            depends_on:
-              - backend
-            restart: unless-stopped
-            healthcheck:
-              test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
-              interval: 30s
-              timeout: 10s
-              retries: 3
-              start_period: 40s
-
-        networks:
-          default:
-            name: pdf3md-network
-        ```
-    *   **`docker-start.sh`**: Download the `docker-start.sh` script from the [pdf3md GitHub repository's main branch](https://github.com/murtaza-nasir/pdf3md/blob/main/docker-start.sh) and place it in the same directory.
-    *   Make the script executable: `chmod +x ./docker-start.sh`
-    *   (Optional) For development mode using local source code (which requires cloning the full repository), you would also need `docker-compose.dev.yml` from the repository.
-
-2.  **Start in Production Mode**:
-    In the directory where you placed `docker-compose.yml` and `docker-start.sh`, run:
+1.  **Clone this repository:**
     ```bash
-    ./docker-start.sh start
-    ```
-    This will pull the latest images from Docker Hub and start the application.
-    -   Access Frontend: `http://localhost:3000`
-    -   Access Backend API: `http://localhost:6201`
-
-3.  **Start in Development Mode** (with hot-reloading):
-    ```bash
-    ./docker-start.sh dev
-    ```
-    This uses local source code for development if `docker-compose.dev.yml` is present and configured for local mounts. Otherwise, it may behave like production mode depending on the script's logic.
-    -   Access Frontend (Vite Dev Server, if using local source): `http://localhost:5173`
-    -   Access Backend API: `http://localhost:6201`
-    
-
-4.  **Other Useful Script Commands**:
-    ```bash
-    ./docker-start.sh stop                  # Stop all services
-    ./docker-start.sh status                # Check running services
-    ./docker-start.sh logs                  # View logs from services
-    ./docker-start.sh rebuild dev example.com  # Rebuild development with custom domain
-    ./docker-start.sh help                  # Display all available script commands
-    ```
-
-### Direct Docker Compose Usage (Alternative with Pre-built Images)
-
-If you prefer to use Docker Compose commands directly with the pre-built images without the `docker-start.sh` script:
-
-#### Direct Deployment
-
-1.  **Create `docker-compose.yml`**:
-    *   Create a directory for your application (e.g., `mkdir pdf3md && cd pdf3md`).
-    *   Create a file named `docker-compose.yml` in this directory and paste the content provided in the section above (under "Using Pre-built Docker Images (Recommended)").
-
-2.  **Pull and Start Services**:
-    In the directory where you created `docker-compose.yml`, run:
-    ```bash
-    docker compose pull # Pulls the latest images specified in docker-compose.yml
-    docker compose up -d
-    ```
-
-3.  **Access Application**: 
-    - With default settings: Frontend at `http://localhost:3000`, Backend API at `http://localhost:6201`
-    - With custom domain: Frontend at `http://example.com:3000`, Backend API at `http://example.com:6201`
-4.  **Stop Services**:
-    ```bash
-    docker compose down
-    ```
-
-#### Development Environment (Using Local Source Code)
-
-This setup is for developing the application locally, not using pre-built images for development.
-
-1.  **Clone the Repository**:
-    ```bash
-    git clone https://github.com/murtaza-nasir/pdf3md.git
+    git clone https://github.com/thomasosche/pdf3md.git
     cd pdf3md
     ```
-2.  **Start Services**:
-    Use the `docker-compose.dev.yml` file, which is typically configured to build images locally and mount source code.
+2.  **Build and start:**
     ```bash
-    docker compose -f docker-compose.dev.yml up --build
-    ``` 
-3.  **Access Application**: 
-    - With default settings: Frontend (Vite) at `http://localhost:5173`, Backend API at `http://localhost:6201`
-    - With custom domain/IP: Frontend at `http://192.168.1.100:5173`, Backend API at `http://192.168.1.100:6201`
-4.  **Stop Services**:
-    ```bash
-    docker compose -f docker-compose.dev.yml down
+    docker compose up -d --build
     ```
+    The first run builds both the frontend and backend images locally from the source in this repository. Subsequent starts reuse the built images.
+3.  **Access the application:**
+    -   Frontend: `http://localhost:3000`
+    -   Backend API: `http://localhost:6201`
+
+### Useful Commands
+
+```bash
+docker compose up -d --build   # build (or rebuild) and start in the background
+docker compose logs -f         # follow logs
+docker compose ps              # show container status
+docker compose down            # stop and remove containers
+```
+
+After pulling new changes from the repository, re-run `docker compose up -d --build` to rebuild the images with the latest source.
+
+### Development Environment (with hot-reloading)
+
+For local development with live reload, use the development compose file, which mounts the source code and runs the Vite dev server:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+-   Frontend (Vite dev server): `http://localhost:5173`
+-   Backend API: `http://localhost:6201`
+
+Stop with:
+
+```bash
+docker compose -f docker-compose.dev.yml down
+```
 
 ### Manual Setup (Running without Docker)
 
@@ -173,7 +92,7 @@ This method involves running the frontend and backend services directly on your 
 1.  **Clone the Repository**:
     If you haven't already, clone the repository to get the source code:
     ```bash
-    git clone https://github.com/murtaza-nasir/pdf3md.git
+    git clone https://github.com/thomasosche/pdf3md.git
     cd pdf3md
     ```
 
@@ -181,8 +100,9 @@ This method involves running the frontend and backend services directly on your 
 
 1.  Navigate to the `pdf3md` sub-directory (if you are in the root of the cloned repo): `cd pdf3md`
 2.  Install Python dependencies: `pip install -r requirements.txt`
-3.  Start the backend server: `python app.py`
-    (The backend will be available at `http://localhost:6201`)
+3.  **Install Pandoc** on the system - it is required for Markdown -> Word conversion (`pypandoc` calls the `pandoc` binary). The Docker image installs this for you; for a manual setup install it via your package manager (e.g. `choco install pandoc` on Windows, `apt install pandoc` on Debian/Ubuntu).
+4.  Start the backend server: `python app.py`
+    (The backend will be available at `http://localhost:6201`. For production use a WSGI server such as `waitress` on Windows or `gunicorn` on Linux instead of the Flask development server.)
 
 #### Frontend (React)
 
@@ -190,6 +110,8 @@ This method involves running the frontend and backend services directly on your 
 2.  Install Node.js dependencies: `npm install`
 3.  Start the frontend development server: `npm run dev`
     (The frontend will be available at `http://localhost:5173`)
+
+    For a production build, run `npm run build` and serve the generated `dist/` folder with any static web server (IIS, Nginx, Apache, `serve`, etc.).
 
 #### Convenience Scripts
 
@@ -205,7 +127,7 @@ The `pdf3md` sub-directory contains scripts for managing both services:
 3.  Monitor the real-time progress as each PDF is converted.
 4.  Once a file is processed, the resulting Markdown will be displayed.
 5.  You can then:
-    -   Copy the Markdown text (from PDF to MD conversion).
+    -   Copy the Markdown text, download it as a `.md` file, or toggle the live preview / header-footer filter (from PDF to MD conversion).
     -   In "MD → Word" mode, input Markdown and download the content as a DOCX file (powered by Pandoc).
 
 ## Configuration Notes
@@ -262,6 +184,7 @@ location /api/ {
 *   **WebSocket Support:** Not currently used by PDF3MD, but if future features require WebSockets, ensure your proxy is configured to handle them.
 *   **SSL/TLS Termination:** It's highly recommended to configure SSL/TLS termination at your reverse proxy.
 *   **CORS:** The backend is configured with permissive CORS headers (`Access-Control-Allow-Origin: *`). In most reverse proxy setups where the frontend and API are served under the same domain, CORS issues should not arise. However, if you encounter them, ensure your proxy isn't stripping or altering necessary CORS headers.
+*   **Authentication:** PDF3MD has no built-in authentication. For internal multi-user deployments, add an authentication layer at the reverse proxy (e.g., Basic Auth or SSO) and/or restrict access to your corporate network/VPN.
 
 Adjust the `proxy_pass` directive to point to the correct address of your backend container as seen by the reverse proxy (e.g., `http://localhost:6201` if on the same machine, or `http://pdf3md-backend:6201` if using Docker service names in a shared Docker network).
 
@@ -269,7 +192,7 @@ Adjust the `proxy_pass` directive to point to the correct address of your backen
 
 -   **Port Conflicts**: Ensure ports `3000`, `5173` (for dev), and `6201` are not in use by other applications. Use `docker compose down` to stop existing PDF3MD containers.
 -   **Script Permissions (Manual Setup)**: If `start_server.sh` or `stop_server.sh` fail, make them executable: `chmod +x pdf3md/start_server.sh pdf3md/stop_server.sh`.
--   **Docker Issues**: Ensure Docker is running. Try rebuilding images with `docker compose up --build`.
+-   **Docker Issues**: Ensure Docker is running. Try rebuilding images with `docker compose up -d --build`.
 -   **API Connectivity**: Verify the backend is running and accessible. Check browser console for errors.
 
 ## License

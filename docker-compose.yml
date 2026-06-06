@@ -1,6 +1,9 @@
 services:
   backend:
-    image: docker.io/learnedmachine/pdf3md-backend:latest 
+    build:
+      context: ./pdf3md
+      dockerfile: Dockerfile.backend
+    image: pdf3md-backend:latest
     container_name: pdf3md-backend
     ports:
       - "6201:6201"
@@ -19,7 +22,10 @@ services:
       start_period: 40s
 
   frontend:
-    image: docker.io/learnedmachine/pdf3md-frontend:latest 
+    build:
+      context: ./pdf3md
+      dockerfile: Dockerfile.frontend
+    image: pdf3md-frontend:latest
     container_name: pdf3md-frontend
     ports:
       - "3000:3000"
