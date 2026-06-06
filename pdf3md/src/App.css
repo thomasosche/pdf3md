@@ -328,6 +328,13 @@ body {
   position: relative;
 }
 
+/* Wide preview: let the converted-markdown area span the full window width */
+.container.wide {
+  max-width: none;
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
 .universal-drop-zone {
   transition: all 0.3s ease;
 }
