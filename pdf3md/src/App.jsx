@@ -724,8 +724,11 @@ function App() {
           </div>
         </div>
 
-        <div 
+        <div
           className={`container universal-drop-zone ${isDragging ? 'dragging' : ''} ${isLoading ? 'loading' : ''}`}
+          style={showPreview && previewZoom > 100
+            ? { maxWidth: `${Math.round(1200 * previewZoom / 100)}px` }
+            : undefined}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragEnter={handleDragEnter}
