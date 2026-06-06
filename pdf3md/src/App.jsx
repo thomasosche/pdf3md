@@ -882,7 +882,7 @@ function App() {
                       <div className="zoom-control" title="Zoom preview text">
                         <button
                           className="zoom-btn"
-                          onClick={() => setPreviewZoom(z => Math.max(60, z - 10))}
+                          onClick={() => setPreviewZoom(z => Math.max(60, z - 20))}
                           disabled={previewZoom <= 60}
                           title="Zoom out"
                         >
@@ -899,7 +899,7 @@ function App() {
                         </button>
                         <button
                           className="zoom-btn"
-                          onClick={() => setPreviewZoom(z => Math.min(200, z + 10))}
+                          onClick={() => setPreviewZoom(z => Math.min(200, z + 20))}
                           disabled={previewZoom >= 200}
                           title="Zoom in"
                         >
