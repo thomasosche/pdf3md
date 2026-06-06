@@ -16,6 +16,7 @@ function App() {
   const [isCopied, setIsCopied] = useState(false)
   const [showPreview, setShowPreview] = useState(false) // Toggle rendered markdown preview vs raw text
   const [previewZoom, setPreviewZoom] = useState(100) // Preview font-size zoom in percent (60-200)
+  const [filterHeaderFooter, setFilterHeaderFooter] = useState(false) // Strip repeated page headers/footers
   const [history, setHistory] = useState([])
   const [selectedHistoryId, setSelectedHistoryId] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(true) // Start open on desktop, will be handled by mobile detection
@@ -494,8 +495,8 @@ function App() {
     try {
       // Create temporary textarea
       const textArea = document.createElement('textarea');
-      textArea.value = markdown;
-      
+      textArea.value = applyFilter(markdown);
+
       // Make it invisible but keep it in the document flow
       textArea.style.position = 'fixed';
       textArea.style.opacity = '0';
@@ -516,6 +517,57 @@ function App() {
       alert('Failed to copy to clipboard: ' + err.message);
     }
   };
+
+  // Heuristically strip repeated page headers/footers from converted Markdown.
+  // Removes standalone page numbers ("3", "Page 3 of 10", "- 3 -") and short
+  // plain-text lines that recur across the document (typical of running
+  // headers/footers), while leaving Markdown structure (headings, tables,
+  // lists, code, blockquotes, rules) untouched.
+  const stripHeaderFooter = (md) => {
+    if (!md) return md;
+    const lines = md.split('\n');
+
+    const counts = {};
+    for (const line of lines) {
+      const t = line.trim();
+      if (t) counts[t] = (counts[t] || 0) + 1;
+    }
+
+    // Whole-line page markers: "3", "Page 3", "Page 3 of 10", "3 / 7", "- 3 -"
+    const pageNumRe = /^(page|seite|p\.?)?\s*\d+\s*(([/]|of|von|-)\s*\d+)?$/i;
+    const dashNumRe = /^[-–—]\s*\d+\s*[-–—]$/;
+    // Embedded page marker anywhere in the line: "Rev. 2 Page 1 / 7",
+    // "Page 1 /", "Page 3 of 10", "Seite 1 von 7". The slash form may omit
+    // the total; the "of/von" form requires a number to avoid eating prose
+    // like "see page 5 of the manual".
+    const pageFragRe = /\b(page|seite|p\.?)\s*\d+\s*(\/\s*\d*|(of|von)\s+\d+)/i;
+    const isStructural = (t) =>
+      /^#{1,6}\s/.test(t) ||        // heading
+      /^\|/.test(t) ||             // table row
+      /^[-*+]\s/.test(t) ||        // bullet list
+      /^\d+\.\s/.test(t) ||        // ordered list
+      /^>/.test(t) ||              // blockquote
+      /^```/.test(t) ||            // code fence
+      /^([-*_]\s?){3,}$/.test(t);  // horizontal rule
+
+    const REPEAT_THRESHOLD = 3;
+    const isJunk = (line) => {
+      const t = line.trim();
+      if (!t) return false;
+      if (pageNumRe.test(t) || dashNumRe.test(t)) return true;
+      // Short header/footer lines that embed a page marker (page number
+      // varies per page, so the repeat heuristic alone misses them).
+      if (t.length <= 80 && !isStructural(t) && pageFragRe.test(t)) return true;
+      if (!isStructural(t) && t.length <= 80 && counts[t] >= REPEAT_THRESHOLD) return true;
+      return false;
+    };
+
+    const out = lines.filter(line => !isJunk(line)).join('\n');
+    return out.replace(/\n{3,}/g, '\n\n').trim() + '\n';
+  };
+
+  // The markdown to render/download, with the optional header/footer filter applied.
+  const applyFilter = (md) => (filterHeaderFooter ? stripHeaderFooter(md) : md);
 
   // Turn an original source filename (e.g. "Report.pdf") into "Report.md".
   const mdNameFor = (sourceName) => `${(sourceName || 'document').replace(/\.[^/.]+$/, '')}.md`;
@@ -544,7 +596,7 @@ function App() {
 
   const downloadMarkdown = () => {
     try {
-      triggerMdDownload(getMarkdownFilename(), markdown);
+      triggerMdDownload(getMarkdownFilename(), applyFilter(markdown));
     } catch (err) {
       console.error('Failed to download markdown:', err);
       alert('Failed to download markdown: ' + err.message);
@@ -554,7 +606,7 @@ function App() {
   // Download a single history item as <originalName>.md
   const handleDownloadHistory = (item) => {
     try {
-      triggerMdDownload(mdNameFor(item.filename), item.markdown);
+      triggerMdDownload(mdNameFor(item.filename), applyFilter(item.markdown));
     } catch (err) {
       console.error('Failed to download markdown:', err);
       alert('Failed to download markdown: ' + err.message);
@@ -575,7 +627,7 @@ function App() {
         usedNames[name] = 1;
       }
       // Stagger slightly so the browser reliably processes multiple downloads.
-      setTimeout(() => triggerMdDownload(name, item.markdown), i * 200);
+      setTimeout(() => triggerMdDownload(name, applyFilter(item.markdown)), i * 200);
     });
   };
 
@@ -682,7 +734,22 @@ function App() {
           </div>
           <div className="top-bar-controls">
             {mode === 'pdf-to-md' && (
-              <button 
+              <button
+                className={`header-footer-toggle ${filterHeaderFooter ? 'active' : ''}`}
+                onClick={() => setFilterHeaderFooter(v => !v)}
+                title={filterHeaderFooter
+                  ? 'Header/footer filter ON - repeated page headers, footers and page numbers are removed. Click to disable.'
+                  : 'Filter header/footer - remove repeated page headers, footers and page numbers from the Markdown. Click to enable.'}
+                aria-pressed={filterHeaderFooter}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 17.25h16.5M5.25 10.5h13.5l-1.5 3h-10.5l-1.5-3Z" />
+                </svg>
+                Filter H/F
+              </button>
+            )}
+            {mode === 'pdf-to-md' && (
+              <button
                 className="file-select-btn"
                 onClick={() => fileInputRef.current?.click()} // Allow click even if loading to add to queue
                 // disabled={isLoading} // Removed: Allow adding to queue even when loading
@@ -971,11 +1038,11 @@ function App() {
                       className="markdown-preview"
                       style={{ fontSize: `${(0.95 * previewZoom / 100).toFixed(3)}rem` }}
                       dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(marked.parse(markdown, { breaks: true }))
+                        __html: DOMPurify.sanitize(marked.parse(applyFilter(markdown), { breaks: true }))
                       }}
                     />
                   ) : (
-                    <pre>{markdown}</pre>
+                    <pre>{applyFilter(markdown)}</pre>
                   )}
                 </div>
               </div>
