@@ -875,6 +875,24 @@ function App() {
                 <div className="markdown-header">
                   <h3>Converted Markdown</h3>
                   <div className="markdown-actions">
+                    {showPreview && (
+                      <button
+                        onClick={() => setWidePreview(w => !w)}
+                        className={`copy-button ${widePreview ? 'active' : ''}`}
+                        title={widePreview ? 'Use normal width' : 'Use full window width'}
+                      >
+                        {widePreview ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 9 4.5 4.5M9 9v-3.75M9 9H5.25M15 9l4.5-4.5M15 9v-3.75M15 9h3.75M9 15l-4.5 4.5M9 15v3.75M9 15H5.25M15 15l4.5 4.5M15 15v3.75M15 15h3.75" />
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                          </svg>
+                        )}
+                        {widePreview ? 'Narrow' : 'Wide'}
+                      </button>
+                    )}
                     <button
                       onClick={() => setShowPreview(p => !p)}
                       className={`copy-button ${showPreview ? 'active' : ''}`}
@@ -897,24 +915,6 @@ function App() {
                         </>
                       )}
                     </button>
-                    {showPreview && (
-                      <button
-                        onClick={() => setWidePreview(w => !w)}
-                        className={`copy-button ${widePreview ? 'active' : ''}`}
-                        title={widePreview ? 'Use normal width' : 'Use full window width'}
-                      >
-                        {widePreview ? (
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 9 4.5 4.5M9 9v-3.75M9 9H5.25M15 9l4.5-4.5M15 9v-3.75M15 9h3.75M9 15l-4.5 4.5M9 15v3.75M9 15H5.25M15 15l4.5 4.5M15 15v3.75M15 15h3.75" />
-                          </svg>
-                        ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-                          </svg>
-                        )}
-                        {widePreview ? 'Narrow' : 'Wide'}
-                      </button>
-                    )}
                     <button
                       onClick={downloadMarkdown}
                       className="copy-button"
