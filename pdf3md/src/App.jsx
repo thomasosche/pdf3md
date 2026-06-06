@@ -533,8 +533,14 @@ function App() {
       if (t) counts[t] = (counts[t] || 0) + 1;
     }
 
+    // Whole-line page markers: "3", "Page 3", "Page 3 of 10", "3 / 7", "- 3 -"
     const pageNumRe = /^(page|seite|p\.?)?\s*\d+\s*(([/]|of|von|-)\s*\d+)?$/i;
     const dashNumRe = /^[-–—]\s*\d+\s*[-–—]$/;
+    // Embedded page marker anywhere in the line: "Rev. 2 Page 1 / 7",
+    // "Page 1 /", "Page 3 of 10", "Seite 1 von 7". The slash form may omit
+    // the total; the "of/von" form requires a number to avoid eating prose
+    // like "see page 5 of the manual".
+    const pageFragRe = /\b(page|seite|p\.?)\s*\d+\s*(\/\s*\d*|(of|von)\s+\d+)/i;
     const isStructural = (t) =>
       /^#{1,6}\s/.test(t) ||        // heading
       /^\|/.test(t) ||             // table row
@@ -549,6 +555,9 @@ function App() {
       const t = line.trim();
       if (!t) return false;
       if (pageNumRe.test(t) || dashNumRe.test(t)) return true;
+      // Short header/footer lines that embed a page marker (page number
+      // varies per page, so the repeat heuristic alone misses them).
+      if (t.length <= 80 && !isStructural(t) && pageFragRe.test(t)) return true;
       if (!isStructural(t) && t.length <= 80 && counts[t] >= REPEAT_THRESHOLD) return true;
       return false;
     };
