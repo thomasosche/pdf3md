@@ -877,8 +877,8 @@ function App() {
               <div className="markdown-container">
                 <div className="markdown-header">
                   <h3>Converted Markdown</h3>
-                  <div className="markdown-actions">
-                    {showPreview && (
+                  {showPreview && (
+                    <div className="markdown-zoom-center">
                       <div className="zoom-control" title="Zoom preview text">
                         <button
                           className="zoom-btn"
@@ -908,7 +908,9 @@ function App() {
                           </svg>
                         </button>
                       </div>
-                    )}
+                    </div>
+                  )}
+                  <div className="markdown-actions">
                     <button
                       onClick={() => setShowPreview(p => !p)}
                       className={`copy-button ${showPreview ? 'active' : ''}`}

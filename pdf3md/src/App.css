@@ -578,6 +578,17 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+}
+
+/* Zoom panel pinned to the horizontal centre of the header so it does
+   not shift when the container widens on zoom. */
+.markdown-zoom-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
 }
 
 .markdown-header h3 {
