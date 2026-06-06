@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './Sidebar.css'
 
-const Sidebar = ({ isOpen, history, onSelectHistory, selectedHistoryId, onClearHistory, onDeleteHistory, onClose }) => {
+const Sidebar = ({ isOpen, history, onSelectHistory, selectedHistoryId, onClearHistory, onDeleteHistory, onDownloadHistory, onDownloadAll, onClose }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filteredHistory, setFilteredHistory] = useState(history)
 
@@ -102,6 +102,11 @@ const Sidebar = ({ isOpen, history, onSelectHistory, selectedHistoryId, onClearH
     }
   }
 
+  const handleDownloadItem = (e, item) => {
+    e.stopPropagation() // Prevent triggering the item selection
+    onDownloadHistory(item)
+  }
+
   const renderHistoryGroup = (title, items) => {
     if (items.length === 0) return null
 
@@ -145,13 +150,22 @@ const Sidebar = ({ isOpen, history, onSelectHistory, selectedHistoryId, onClearH
                 {/* SVG clock icon removed */}
                 <span>{formatRelativeTime(item.timestamp)}</span>
               </div>
-              <button
-                className="delete-text-btn"
-                onClick={(e) => handleDeleteItem(e, item.id)}
-                title="Delete this conversion"
-              >
-                Delete
-              </button>
+              <div className="history-item-buttons">
+                <button
+                  className="download-text-btn"
+                  onClick={(e) => handleDownloadItem(e, item)}
+                  title={`Download ${item.filename ? item.filename.replace(/\.[^/.]+$/, '') : 'document'}.md`}
+                >
+                  Download .md
+                </button>
+                <button
+                  className="delete-text-btn"
+                  onClick={(e) => handleDeleteItem(e, item.id)}
+                  title="Delete this conversion"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -164,7 +178,7 @@ const Sidebar = ({ isOpen, history, onSelectHistory, selectedHistoryId, onClearH
       <div className="sidebar-header">
         <h2>History</h2>
         <div className="sidebar-actions">
-          <button 
+          <button
             className="mobile-close-btn"
             onClick={onClose}
             title="Close sidebar"
@@ -173,7 +187,18 @@ const Sidebar = ({ isOpen, history, onSelectHistory, selectedHistoryId, onClearH
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
           </button>
-          <button 
+          {history.length > 0 && (
+            <button
+              className="download-all-btn"
+              onClick={onDownloadAll}
+              title="Download all conversions as .md files"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+            </button>
+          )}
+          <button
             className="clear-history-btn"
             onClick={onClearHistory}
             title="Clear all history"

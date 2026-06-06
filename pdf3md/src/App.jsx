@@ -8,6 +8,7 @@ import './components/MultiFileUploadStatus.css' // Import its CSS
 
 function App() {
   const [markdown, setMarkdown] = useState('')
+  const [markdownFilename, setMarkdownFilename] = useState('') // Original source filename of the displayed markdown
   const [isLoading, setIsLoading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
@@ -183,6 +184,7 @@ function App() {
           clearInterval(pollInterval);
           activeConversionId.current = null;
           setMarkdown(progressData.result.markdown); // Display the latest markdown
+          setMarkdownFilename(progressData.result.filename || fileName);
           addToHistory(progressData.result);
           updateFileStatus(fileName, { status: 'Completed', markdown: progressData.result.markdown, progress: 100 });
           
@@ -302,6 +304,7 @@ function App() {
         // DOCX conversion is synchronous
         if (data.success && data.markdown) {
           setMarkdown(data.markdown); // Display the markdown
+          setMarkdownFilename(data.filename || file.name);
           addToHistory(data); // Add to history (data should match history item structure)
           updateFileStatus(file.name, { status: 'Completed', markdown: data.markdown, progress: 100, stage: 'Completed' });
           setIsLoading(false);
@@ -369,7 +372,8 @@ function App() {
     setUploadQueue(prevQueue => [...prevQueue, ...newFileEntries.map(entry => entry.originalFile)]); // Add original files to processing queue
     
     // Clear main markdown display when new files are added
-    setMarkdown(''); 
+    setMarkdown('');
+    setMarkdownFilename('');
     setSelectedHistoryId(null);
   };
 
@@ -437,6 +441,7 @@ function App() {
   const handleSelectHistory = (historyItem) => {
     // Display history item's markdown
     setMarkdown(historyItem.markdown);
+    setMarkdownFilename(historyItem.filename || '');
     setSelectedHistoryId(historyItem.id);
 
     // DO NOT interfere with ongoing uploads.
@@ -473,6 +478,7 @@ function App() {
     if (selectedHistoryId === itemId) {
       setSelectedHistoryId(null)
       setMarkdown('')
+      setMarkdownFilename('')
     }
   }
 
@@ -505,6 +511,68 @@ function App() {
       console.error('Failed to copy:', err);
       alert('Failed to copy to clipboard: ' + err.message);
     }
+  };
+
+  // Turn an original source filename (e.g. "Report.pdf") into "Report.md".
+  const mdNameFor = (sourceName) => `${(sourceName || 'document').replace(/\.[^/.]+$/, '')}.md`;
+
+  // Trigger a browser download of markdown text under the given filename.
+  const triggerMdDownload = (filename, mdText) => {
+    const blob = new Blob([mdText], { type: 'text/markdown;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
+  // Resolve the .md filename for the currently displayed markdown, named
+  // after the original source file (PDF or DOCX).
+  const getMarkdownFilename = () => {
+    const match = fileUploadStates.find(f => f.markdown === markdown);
+    const source = markdownFilename || match?.name || currentFile?.name || 'document';
+    return mdNameFor(source);
+  };
+
+  const downloadMarkdown = () => {
+    try {
+      triggerMdDownload(getMarkdownFilename(), markdown);
+    } catch (err) {
+      console.error('Failed to download markdown:', err);
+      alert('Failed to download markdown: ' + err.message);
+    }
+  };
+
+  // Download a single history item as <originalName>.md
+  const handleDownloadHistory = (item) => {
+    try {
+      triggerMdDownload(mdNameFor(item.filename), item.markdown);
+    } catch (err) {
+      console.error('Failed to download markdown:', err);
+      alert('Failed to download markdown: ' + err.message);
+    }
+  };
+
+  // Download every history item as its own .md file, deduplicating
+  // identical filenames with a numeric suffix.
+  const handleDownloadAllHistory = () => {
+    if (!history.length) return;
+    const usedNames = {};
+    history.forEach((item, i) => {
+      let name = mdNameFor(item.filename);
+      if (usedNames[name]) {
+        const n = ++usedNames[name];
+        name = name.replace(/\.md$/, `-${n}.md`);
+      } else {
+        usedNames[name] = 1;
+      }
+      // Stagger slightly so the browser reliably processes multiple downloads.
+      setTimeout(() => triggerMdDownload(name, item.markdown), i * 200);
+    });
   };
 
   const handleMarkdownToWord = async () => {
@@ -576,6 +644,8 @@ function App() {
           selectedHistoryId={selectedHistoryId}
           onClearHistory={handleClearHistory}
           onDeleteHistory={handleDeleteHistory}
+          onDownloadHistory={handleDownloadHistory}
+          onDownloadAll={handleDownloadAllHistory}
           onClose={() => setSidebarOpen(false)}
         />
       )}
@@ -801,8 +871,18 @@ function App() {
                 <div className="markdown-header">
                   <h3>Converted Markdown</h3>
                   <div className="markdown-actions">
-                    <button 
-                      onClick={copyToClipboard} 
+                    <button
+                      onClick={downloadMarkdown}
+                      className="copy-button"
+                      title={`Download ${getMarkdownFilename()}`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                      </svg>
+                      Download .md
+                    </button>
+                    <button
+                      onClick={copyToClipboard}
                       className={`copy-button ${isCopied ? 'copied' : ''}`}
                     >
                       {isCopied ? (

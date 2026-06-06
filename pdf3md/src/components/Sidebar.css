@@ -363,6 +363,58 @@
   text-decoration: underline;
 }
 
+.history-item-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.download-text-btn {
+  background: none !important;
+  border: none !important;
+  color: #2563eb !important;
+  font-size: 0.7rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  padding: 2px 0 !important;
+  margin: 0 !important;
+  line-height: 1.1 !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-block !important;
+  transition: color 0.2s ease;
+}
+
+.download-text-btn:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.download-all-btn {
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  color: #2563eb;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.download-all-btn:hover {
+  background: rgba(37, 99, 235, 0.15);
+  border-color: rgba(37, 99, 235, 0.3);
+  transform: translateY(-1px);
+}
+
+.download-all-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
