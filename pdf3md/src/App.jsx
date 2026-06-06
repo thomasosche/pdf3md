@@ -1,5 +1,7 @@
 // src/App.jsx
 import { useState, useRef, useEffect } from 'react'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import Sidebar from './components/Sidebar'
 import MultiFileUploadStatus from './components/MultiFileUploadStatus' // Import the new component
 import './App.css'
@@ -12,6 +14,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
+  const [showPreview, setShowPreview] = useState(false) // Toggle rendered markdown preview vs raw text
   const [history, setHistory] = useState([])
   const [selectedHistoryId, setSelectedHistoryId] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(true) // Start open on desktop, will be handled by mobile detection
@@ -872,6 +875,28 @@ function App() {
                   <h3>Converted Markdown</h3>
                   <div className="markdown-actions">
                     <button
+                      onClick={() => setShowPreview(p => !p)}
+                      className={`copy-button ${showPreview ? 'active' : ''}`}
+                      title={showPreview ? 'Show raw Markdown' : 'Show rendered preview'}
+                    >
+                      {showPreview ? (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" />
+                          </svg>
+                          Raw
+                        </>
+                      ) : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                          </svg>
+                          Preview
+                        </>
+                      )}
+                    </button>
+                    <button
                       onClick={downloadMarkdown}
                       className="copy-button"
                       title={`Download ${getMarkdownFilename()}`}
@@ -904,7 +929,16 @@ function App() {
                   </div>
                 </div>
                 <div className="markdown-content">
-                  <pre>{markdown}</pre>
+                  {showPreview ? (
+                    <div
+                      className="markdown-preview"
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(marked.parse(markdown, { breaks: true }))
+                      }}
+                    />
+                  ) : (
+                    <pre>{markdown}</pre>
+                  )}
                 </div>
               </div>
             )}
