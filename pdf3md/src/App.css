@@ -328,13 +328,6 @@ body {
   position: relative;
 }
 
-/* Wide preview: let the converted-markdown area span the full window width */
-.container.wide {
-  max-width: none;
-  padding-left: 40px;
-  padding-right: 40px;
-}
-
 .universal-drop-zone {
   transition: all 0.3s ease;
 }
@@ -693,10 +686,10 @@ pre {
   font-weight: 600;
 }
 
-.markdown-preview h1 { font-size: 1.7rem; border-bottom: 1px solid rgba(226, 232, 240, 0.9); padding-bottom: 0.3em; }
-.markdown-preview h2 { font-size: 1.4rem; border-bottom: 1px solid rgba(226, 232, 240, 0.7); padding-bottom: 0.2em; }
-.markdown-preview h3 { font-size: 1.2rem; }
-.markdown-preview h4 { font-size: 1.05rem; }
+.markdown-preview h1 { font-size: 1.8em; border-bottom: 1px solid rgba(226, 232, 240, 0.9); padding-bottom: 0.3em; }
+.markdown-preview h2 { font-size: 1.5em; border-bottom: 1px solid rgba(226, 232, 240, 0.7); padding-bottom: 0.2em; }
+.markdown-preview h3 { font-size: 1.25em; }
+.markdown-preview h4 { font-size: 1.1em; }
 .markdown-preview > :first-child { margin-top: 0; }
 
 .markdown-preview p { margin: 0.7em 0; }
@@ -722,7 +715,7 @@ pre {
 .markdown-preview pre code {
   background: none;
   padding: 0;
-  font-size: 0.85rem;
+  font-size: 0.9em;
 }
 
 .markdown-preview blockquote {
@@ -736,7 +729,7 @@ pre {
   border-collapse: collapse;
   width: 100%;
   margin: 1em 0;
-  font-size: 0.9rem;
+  font-size: 0.95em;
 }
 
 .markdown-preview th,
@@ -764,6 +757,72 @@ pre {
   background: rgba(37, 99, 235, 0.12);
   border-color: rgba(37, 99, 235, 0.35);
   color: #2563eb;
+}
+
+/* Preview zoom control (- / % / +) */
+.zoom-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.zoom-btn,
+.zoom-level {
+  background: none;
+  border: none;
+  color: #475569;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.zoom-btn {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+}
+
+.zoom-btn svg { width: 16px; height: 16px; }
+
+.zoom-level {
+  min-width: 46px;
+  height: 26px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 0 4px;
+}
+
+.zoom-btn:hover:not(:disabled),
+.zoom-level:hover {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.zoom-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+@media (prefers-color-scheme: dark) {
+  .zoom-control {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(51, 65, 85, 0.8);
+  }
+  .zoom-btn,
+  .zoom-level { color: #cbd5e1; }
+  .zoom-btn:hover:not(:disabled),
+  .zoom-level:hover {
+    background: rgba(37, 99, 235, 0.25);
+    color: #e2e8f0;
+  }
 }
 
 /* Dark mode support */

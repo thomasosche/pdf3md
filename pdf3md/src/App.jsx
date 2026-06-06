@@ -15,7 +15,7 @@ function App() {
   const [isDragging, setIsDragging] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
   const [showPreview, setShowPreview] = useState(false) // Toggle rendered markdown preview vs raw text
-  const [widePreview, setWidePreview] = useState(false) // Use full window width for the preview
+  const [previewZoom, setPreviewZoom] = useState(100) // Preview font-size zoom in percent (60-200)
   const [history, setHistory] = useState([])
   const [selectedHistoryId, setSelectedHistoryId] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(true) // Start open on desktop, will be handled by mobile detection
@@ -725,7 +725,7 @@ function App() {
         </div>
 
         <div 
-          className={`container universal-drop-zone ${isDragging ? 'dragging' : ''} ${isLoading ? 'loading' : ''} ${showPreview && widePreview ? 'wide' : ''}`}
+          className={`container universal-drop-zone ${isDragging ? 'dragging' : ''} ${isLoading ? 'loading' : ''}`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragEnter={handleDragEnter}
@@ -876,22 +876,35 @@ function App() {
                   <h3>Converted Markdown</h3>
                   <div className="markdown-actions">
                     {showPreview && (
-                      <button
-                        onClick={() => setWidePreview(w => !w)}
-                        className={`copy-button ${widePreview ? 'active' : ''}`}
-                        title={widePreview ? 'Use normal width' : 'Use full window width'}
-                      >
-                        {widePreview ? (
+                      <div className="zoom-control" title="Zoom preview text">
+                        <button
+                          className="zoom-btn"
+                          onClick={() => setPreviewZoom(z => Math.max(60, z - 10))}
+                          disabled={previewZoom <= 60}
+                          title="Zoom out"
+                        >
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 9 4.5 4.5M9 9v-3.75M9 9H5.25M15 9l4.5-4.5M15 9v-3.75M15 9h3.75M9 15l-4.5 4.5M9 15v3.75M9 15H5.25M15 15l4.5 4.5M15 15v3.75M15 15h3.75" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
                           </svg>
-                        ) : (
+                        </button>
+                        <button
+                          className="zoom-level"
+                          onClick={() => setPreviewZoom(100)}
+                          title="Reset zoom to 100%"
+                        >
+                          {previewZoom}%
+                        </button>
+                        <button
+                          className="zoom-btn"
+                          onClick={() => setPreviewZoom(z => Math.min(200, z + 10))}
+                          disabled={previewZoom >= 200}
+                          title="Zoom in"
+                        >
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
                           </svg>
-                        )}
-                        {widePreview ? 'Narrow' : 'Wide'}
-                      </button>
+                        </button>
+                      </div>
                     )}
                     <button
                       onClick={() => setShowPreview(p => !p)}
@@ -951,6 +964,7 @@ function App() {
                   {showPreview ? (
                     <div
                       className="markdown-preview"
+                      style={{ fontSize: `${(0.95 * previewZoom / 100).toFixed(3)}rem` }}
                       dangerouslySetInnerHTML={{
                         __html: DOMPurify.sanitize(marked.parse(markdown, { breaks: true }))
                       }}
