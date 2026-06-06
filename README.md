@@ -16,6 +16,8 @@ PDF3MD is a web application designed for efficient conversion of PDF documents i
 
 -   **PDF to Markdown Conversion**: Transforms PDF documents into clean, readable Markdown, preserving structural elements.
 -   **Markdown to Word (DOCX) Conversion**: Converts user-provided Markdown text to DOCX format using Pandoc for high-fidelity output.
+-   **Markdown Download**: Download the converted Markdown as a `.md` file, automatically named after the original source file (e.g. `Report.pdf` -> `Report.md`).
+-   **Per-Conversion and Bulk Download**: Download any item from the History sidebar individually, or use "Download all" to export every conversion as its own `.md` file at once.
 -   **Multi-File Upload**: Supports uploading and processing multiple PDF files simultaneously for PDF to Markdown conversion.
 -   **Drag & Drop Interface**: User-friendly file uploads via drag and drop or traditional file selection.
 -   **Real-time Progress Tracking**: Detailed status updates during the conversion process for each file.
