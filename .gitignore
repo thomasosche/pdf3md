@@ -120,6 +120,9 @@ pdf3md/backend.log
 pdf3md/frontend.log
 .md
 
+# SBOM (generated, never commit)
+sbom-*.json
+
 # Others
 !README.md
 .gitignore
