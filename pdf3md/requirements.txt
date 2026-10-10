@@ -1,5 +1,5 @@
 Flask==3.0
 Flask-CORS==4.0
 pymupdf4llm==1.27.2.3
-pymupdf==1.27.2.2
+pymupdf==1.27.2.3
 pypandoc==1.17
