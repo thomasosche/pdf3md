@@ -114,6 +114,25 @@ This method involves running the frontend and backend services directly on your 
 
     For a production build, run `npm run build` and serve the generated `dist/` folder with any static web server (IIS, Nginx, Apache, `serve`, etc.).
 
+#### Deploying Frontend to Cloudflare Pages
+
+When deploying the frontend to **Cloudflare Pages**:
+
+1. In the Cloudflare dashboard, go to **Workers & Pages** > **Create application** > select the **Pages** tab (not Worker) > **Connect to Git**.
+2. Select your repository and configure the build settings:
+
+| Setting | Value | Notes |
+|---|---|---|
+| **Framework preset** | `Vite` | |
+| **Root directory** | `pdf3md` | **Mandatory.** Do not leave blank or `/`. The React source code and `index.html` live inside the `pdf3md/` subfolder. Leaving this empty causes Rollup error: `Could not resolve entry module "index.html"`. |
+| **Build command** | `npm run build` | |
+| **Build output directory** | `dist` | Do **not** use `pdf3md/dist` if Root directory is already set to `pdf3md`. |
+
+3. **Environment variables** (optional but recommended):
+   - Set `NODE_VERSION` to `20` (or `18`) to ensure Node compatibility with Vite.
+
+> **Backend Note:** Cloudflare Pages hosts only the static frontend. When accessed via a domain, the frontend directs API requests to `/api/*` on that domain. Ensure your Python backend (`app.py` on port `6201`) is proxied to `/api/*` (e.g. via Cloudflare Tunnel, a reverse proxy, or Worker route).
+
 #### Convenience Scripts
 
 The `pdf3md` sub-directory contains scripts for managing both services:
@@ -191,6 +210,7 @@ Adjust the `proxy_pass` directive to point to the correct address of your backen
 
 ## Troubleshooting
 
+-   **Cloudflare Pages Build Error (`Could not resolve entry module "index.html"`)**: This occurs if Cloudflare runs the build from the repository root instead of the frontend subdirectory. Ensure the **Root directory** in Cloudflare Pages build settings is explicitly set to `pdf3md`.
 -   **Port Conflicts**: Ensure ports `3000`, `5173` (for dev), and `6201` are not in use by other applications. Use `docker compose down` to stop existing PDF3MD containers.
 -   **Script Permissions (Manual Setup)**: If `start_server.sh` or `stop_server.sh` fail, make them executable: `chmod +x pdf3md/start_server.sh pdf3md/stop_server.sh`.
 -   **Docker Issues**: Ensure Docker is running. Try rebuilding images with `docker compose up -d --build`.
